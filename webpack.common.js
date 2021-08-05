@@ -3,13 +3,16 @@ const TsConfigPathsPlugin = require('awesome-typescript-loader').TsConfigPathsPl
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
+const ESLintPlugin = require('eslint-webpack-plugin');
 const project = require('./project');
 
 module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'js/[name].[hash].js',
-    chunkFilename: 'js/[name].[hash].js'
+    filename: 'js/[name].[contenthash].js',
+    chunkFilename: 'js/[name].[contenthash].js'
   },
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
@@ -19,12 +22,21 @@ module.exports = {
       new TsConfigPathsPlugin({}),
     ],
   },
+  optimization: {
+    usedExports: true
+  },
   module: {
     rules: [
       {
         test: /\.(ts|tsx|jsx|js)$/,
         include: path.resolve(__dirname, 'src'),
-        loader: 'awesome-typescript-loader',
+        exclude: /node_modules/,
+        use: {
+          loader: 'ts-loader',
+          options: {
+            transpileOnly: true
+          }
+        }
       },
       {
         enforce: 'pre',
@@ -58,22 +70,40 @@ module.exports = {
       },
       {
         test: /\.(sa|sc|c)ss$/,
-        include: path.resolve(__dirname, 'src/styles'),
-        use: ['style-loader', 'css-loader', 'sass-loader']
+        use: [
+          process.env.NODE_ENV !== 'production'
+            ? 'style-loader'
+            : MiniCssExtractPlugin.loader,
+          'css-loader',
+          {
+            loader: 'sass-loader',
+            options: {
+              sourceMap: true
+            }
+          }
+        ]
       }
     ]
   },
   plugins: [
     new MiniCssExtractPlugin({
-      filename: 'css/[hash].css',
-      chunkFilename: 'css/[hash].css',
+      filename: 'css/[contenthash].css',
+      chunkFilename: 'css/[contenthash].css',
       ignoreOrder: true
     }),
     new CleanWebpackPlugin(),
+    new ForkTsCheckerWebpackPlugin(),
     new HtmlWebpackPlugin({
       title: project.title,
       favicon: project.favicon,
       template: path.resolve(__dirname, 'src', 'index.html')
+    }),
+    new CopyPlugin({
+      patterns: [{ from: 'src/assets', to: 'assets' }]
+    }),
+    new ESLintPlugin({
+      extensions: ['.tsx', '.ts', '.js'],
+      exclude: 'node_modules'
     })
   ]
 };

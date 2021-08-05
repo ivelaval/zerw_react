@@ -5,6 +5,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = merge(common, {
   mode: 'production',
+  devtool: 'source-map',
   entry: {
     app: ['./src/index.tsx'],
     vendor: ['react', 'react-dom']
@@ -31,5 +32,4 @@ module.exports = merge(common, {
       }
     ]
   },
-  plugins: [new webpack.HashedModuleIdsPlugin()]
 });

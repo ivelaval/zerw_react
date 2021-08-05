@@ -6,7 +6,7 @@ module.exports = merge(common, {
   mode: 'development',
   devtool: 'source-map',
   entry: {
-    app: ['./src/index.tsx', 'webpack/hot/dev-server'],
+    app: ['./src/index.tsx'],
     vendor: ['react', 'react-dom']
   },
   devServer: {
@@ -26,6 +26,4 @@ module.exports = merge(common, {
     modules: false,
     children: false,
   },
-  watch: true,
-  plugins: [new webpack.HotModuleReplacementPlugin()]
 });
